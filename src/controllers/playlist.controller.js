@@ -1,4 +1,4 @@
-import mongoose, {isValidObjectId} from "mongoose"
+import mongoose, {isValidObjectId, mongo} from "mongoose"
 import {Playlist} from "../models/playlist.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
@@ -6,9 +6,16 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 
 const createPlaylist = asyncHandler(async (req, res) => {
-    const {name, description} = req.body
-
+    
     //TODO: create playlist
+    // get username and description from frontend
+    // validation checks
+    //get vidoid and userid
+    //create plyalist object
+    //save a responce in plalist 
+    //send responce 
+
+
 })
 
 const getUserPlaylists = asyncHandler(async (req, res) => {

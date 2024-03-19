@@ -31,11 +31,16 @@ const createTweet = asyncHandler(async (req, res) => {
 
 const getUserTweets = asyncHandler(async (req, res) => {
     // TODO: get user tweets
+    const {userId} = req.params
+    
+    if(!(isValidObjectId(userId))){
+        throw new ApiError(400, "User ID missing")
+    }
+
     const allTweets = await User.aggregate([
         {
             $match: {
-                _id: new mongoose.Types.ObjectId((req.user._id))
-                
+                _id: new mongoose.Types.ObjectId(userId)
             }
         },
         {
@@ -64,14 +69,19 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
-    const tweetData = req.body;
+    const {tweetData} = req.body;
+    const {tweetId} = req.params
 
     if (!tweetData || !tweetData.content) {
         throw new ApiError(400, "Data is Required")
     }
 
+    if (!mongoose.isValidObjectId(tweetId)) {
+        throw new ApiError(400, "Invalid tweet ID");
+    }
+
     const tweet = await Tweet.findByIdAndUpdate(
-        req.params.tweetId,
+        tweetId,
         {
             $set: {
                 content: tweetData.content,
@@ -97,8 +107,6 @@ const updateTweet = asyncHandler(async (req, res) => {
 
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
-
-
     const deleteTweet = await Tweet.deleteOne(
         {
             _id: req.params.tweetId
