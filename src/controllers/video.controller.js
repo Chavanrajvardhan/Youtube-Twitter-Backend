@@ -160,12 +160,9 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     const togglePublishStatus = await Video.findByIdAndUpdate(
         videoId,
         {
-            $set: {
-                isPublished : !isPublished
-            }
+            $set: {isPublished : !isPublished}
         }
     )
-
     if (!togglePublishStatus) {
         throw new ApiError(400, "Error while change to publish status")
     }
