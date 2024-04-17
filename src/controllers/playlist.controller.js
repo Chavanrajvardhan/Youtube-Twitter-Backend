@@ -49,7 +49,6 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
             $match: {
                 _id: new mongoose.Types.ObjectId(userId)
             }
-
         },
         {
             $lookup: {
@@ -64,9 +63,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
                 UserPlaylists: 1,
             }
         }
-
     ])
-
     if (!getUserPlaylists) {
         throw new ApiError(400, "Error while accessing User Playlist")
     }
@@ -104,27 +101,14 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     const { playlistId, videoId } = req.params
 
     if (!(playlistId && isValidObjectId(videoId))) {
-        throw new ApiError(400, "playlistId and Video required")
+        throw new ApiError(400, "Invalid Playlist or videoId")
     }
 
-    const video = await Video.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(videoId)
-            }
-        },
-        {
-            $lookup: {
-                from: "playlists",
-                localField: "_id",
-                foreignField: "videos",
-                as: "playlists"
-            }
-        }
-    ])
+    const playlist = await Playlist.findById(playlistId);
+    const video = await Video.findById(videoId)
 
-    if (!video) {
-        throw new ApiError(400, "Error while getting video in playlis")
+    if (playlist.owner?.toString() !== req.user?._id.toString() && video.owner?.toString() !== req.user?._id.toString()) {
+        throw new ApiError(400, "only owner can add video to playlist")
     }
 
     const addVideoToPlaylist = await Playlist.findByIdAndUpdate(
