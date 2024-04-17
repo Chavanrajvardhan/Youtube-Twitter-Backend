@@ -9,6 +9,38 @@ const getVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { page = 1, limit = 10 } = req.query
 
+    if (!isValidObjectId(videoId)) {
+        throw new ApiError(400, "Invalid videoId")
+    }
+
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+
+    if(!Number.isFinite(page)){
+        throw new ApiError(400, "page is required")
+    }
+
+    if(!Number.isFinite(limit)){
+        throw new ApiError(400, "Limit is required")
+    }
+
+    const getVideoComments = await Comment.aggregate([
+        {
+            $match: {
+                _id :new mongoose.Types.ObjectId(videoId)
+            }
+        }
+    ])
+
+    const options = {
+        page : parsedPage,
+        limit: parsedLimit
+    }
+
+    const comments = await Comment.aggregatePaginate({aggregate: getVideoComments,options})
+    return res.status(200).json(
+        new ApiResponse(200, comments, "All Video Comment Fetched Successfully")
+    )
 })
 
 const addComment = asyncHandler(async (req, res) => {
@@ -78,14 +110,14 @@ const updateComment = asyncHandler(async (req, res) => {
 const deleteComment = asyncHandler(async (req, res) => {
     // TODO: delete a comment
 
-    const {commentId} = req.params;
+    const { commentId } = req.params;
 
-    if(!isValidObjectId(commentId)){
+    if (!isValidObjectId(commentId)) {
         throw new ApiError(400, "Invalid CommnetId")
     }
-    const deleteComment = await Comment.deleteOne({_id: commentId});
+    const deleteComment = await Comment.deleteOne({ _id: commentId });
 
-    if(!deleteComment){
+    if (!deleteComment) {
         throw new ApiError(400, "Error While deleting Comment")
     }
 
