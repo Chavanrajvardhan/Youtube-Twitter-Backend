@@ -4,7 +4,7 @@ import { User } from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
-import { uploadOnCloudinary } from "../utils/cloudinary.js"
+import { deleteFileOnCloudinary, deleteVideoOnCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js"
 
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
@@ -84,6 +84,8 @@ const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     const { title, description } = req.body;
 
+    const  thumbnailLocalPath = req.file?.path;
+
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "video id missing")
     }
@@ -92,11 +94,12 @@ const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "title and description required")
     }
 
-    const thumbnailLocalPath = req.file?.path;
-
-    if(!thumbnailLocalPath){
+    if (!thumbnailLocalPath) {
         throw new ApiError(400, "Thimbnail path error")
     }
+
+    const oldUserInfo = await Video.findById(videoId).select("-password -refreshToken");
+    await deleteFileOnCloudinary(oldUserInfo.thumbnail)
 
     const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
 
@@ -138,8 +141,12 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if (!isValidObjectId(videoId)) {
         throw new ApiError(400, "Video Id missing")
     }
+    
+    const oldVideoInfo = await Video.findOne({_id : videoId})
 
     const deleteVideo = await Video.deleteOne({ _id: videoId })
+    await deleteFileOnCloudinary(oldVideoInfo.thumbnail)
+    await deleteVideoOnCloudinary(oldVideoInfo.videoFile)
 
     if (!deleteVideo) {
         throw new ApiError(400, "Error while deleting video")
@@ -160,7 +167,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     const togglePublishStatus = await Video.findByIdAndUpdate(
         videoId,
         {
-            $set: {isPublished : !isPublished}
+            $set: { isPublished: !isPublished }
         }
     )
     if (!togglePublishStatus) {
