@@ -31,32 +31,17 @@ const createTweet = asyncHandler(async (req, res) => {
 
 const getUserTweets = asyncHandler(async (req, res) => {
     // TODO: get user tweets
-    const {userId} = req.params
+    const { userId } = req.params
 
-    if(!(isValidObjectId(userId))){
+    if (!(isValidObjectId(userId))) {
         throw new ApiError(400, "User ID missing")
     }
 
-    const allTweets = await User.aggregate([
-        {
-            $match: {
-                _id: new mongoose.Types.ObjectId(userId)
-            }
-        },
-        {
-            $lookup: {
-                from: "tweets",
-                localField: "_id",
-                foreignField: "owner",
-                as: "allTweets"
-            }
-        },
-        {
-            $project: {
-                allTweets: 1,
-            }
-        }
-    ]);
+    const allTweets = await Tweet.find(
+        {owner: userId,}
+    )
+
+    console.log(allTweets);
 
     if (allTweets.length === 0) {
         throw new ApiError(400, "Error while getting all tweets")
@@ -69,8 +54,8 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
-    const {tweetData} = req.body;
-    const {tweetId} = req.params
+    const { tweetData } = req.body;
+    const { tweetId } = req.params
 
     if (!tweetData || !tweetData.content) {
         throw new ApiError(400, "Data is Required")

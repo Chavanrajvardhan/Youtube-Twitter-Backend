@@ -1,11 +1,11 @@
-import {v2 as cloudinary} from "cloudinary"
+import { v2 as cloudinary } from "cloudinary"
 import fs from "fs"
 
 
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET 
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
@@ -26,6 +26,31 @@ const uploadOnCloudinary = async (localFilePath) => {
     }
 }
 
+const deleteFileOnCloudinary = async (filePath) => {
+    try {
+        if (!filePath) return null;
+
+        const public_id = filePath.split("/").pop().split(".")[0]
+
+        const response = await cloudinary.uploader.destroy(public_id);
+        return response;
+
+    } catch (error) {
+        return error;
+    }
+}
+
+const deleteVideoOnCloudinary = async (videoFilePath) => {
+    try {
+        if (!videoFilePath) return null;
+        
+        const public_id = videoFilePath.split("/").pop().split(".")[0];
+        const response = await cloudinary.uploader.destroy(public_id, { invalidate: true, resource_type: 'video'});
+        return response;
+    } catch (error) {
+        return error;
+    }
+}
 
 
-export {uploadOnCloudinary}
+export { uploadOnCloudinary, deleteFileOnCloudinary, deleteVideoOnCloudinary }

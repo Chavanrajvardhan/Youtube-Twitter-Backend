@@ -107,7 +107,6 @@ const loginUser = asyncHandler(async (req, res) =>{
     //send cookie
 
     const {email, username, password} = req.body
-    console.log(email);
 
     if (!username && !email) {
         throw new ApiError(400, "username or email is required")
@@ -264,8 +263,9 @@ const getCurrentUser = asyncHandler(async(req, res) => {
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
     const {fullName, email} = req.body
+    console.log(fullName)
 
-    if (!fullName || !email) {
+    if (!(fullName || email)) {
         throw new ApiError(400, "All fields are required")
     }
 
@@ -415,7 +415,6 @@ const getUserChannelProfile = asyncHandler(async(req, res) => {
                 avatar: 1,
                 coverImage: 1,
                 email: 1
-
             }
         }
     ])

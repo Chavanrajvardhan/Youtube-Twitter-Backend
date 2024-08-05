@@ -84,7 +84,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 
-
 const publishAVideo = asyncHandler(async (req, res) => {
     // TODO: get video, upload to cloudinary, create video
 
@@ -112,11 +111,12 @@ const publishAVideo = asyncHandler(async (req, res) => {
     const video = await Video.create({
         videoFile: videoFile?.url,
         thumbnail: thumbnail?.url,
+        owner: req.user._id,
         title: title,
         description: description || "",
         duration: videoFile?.duration,
-        owner: req.user._id,
-        isPublished: true
+        isPublished: true,
+
     })
 
     const publishedVideo = await Video.findById(video._id)
